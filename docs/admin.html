@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - VibeForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        .admin-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .admin-header h1 {
+            color: var(--text-accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-header p {
+            color: var(--text-secondary);
+        }
+        
+        .component-form {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .form-group textarea.code-editor {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            min-height: 300px;
+        }
+        
+        .form-group small {
+            display: block;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #b86505;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+        
+        .btn-success {
+            background: var(--text-success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #2ea043;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--text-success);
+            color: var(--text-success);
+        }
+        
+        .alert-error {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--text-error);
+            color: var(--text-error);
+        }
+        
+        .alert-info {
+            background: rgba(165, 214, 255, 0.1);
+            border: 1px solid var(--text-info);
+            color: var(--text-info);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .tab.active {
+            color: var(--text-accent);
+            border-bottom-color: var(--text-accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .category-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .category-chip {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .category-chip:hover {
+            background: var(--bg-primary);
+            border-color: var(--text-accent);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--text-accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🔧 VibeForge Admin Panel</h1>
+            <p>Add and manage Claude Code components</p>
+        </div>
+        
+        <div id="alerts"></div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="agents">🤖 Agents</button>
+            <button class="tab" data-tab="commands">⚡ Commands</button>
+            <button class="tab" data-tab="mcps">🔌 MCPs</button>
+            <button class="tab" data-tab="settings">⚙️ Settings</button>
+            <button class="tab" data-tab="hooks">🪝 Hooks</button>
+            <button class="tab" data-tab="skills">🎨 Skills</button>
+            <button class="tab" data-tab="plugins">🧩 Plugins</button>
+        </div>
+        
+        <!-- Agents Tab -->
+        <div id="tab-agents" class="tab-content active">
+            <div class="component-form">
+                <h2>Add New Agent</h2>
+                <form id="form-agents">
+                    <div class="form-group">
+                        <label for="agents-category">Category/Tag *</label>
+                        <input type="text" id="agents-category" name="category" required 
+                               placeholder="e.g., development-team, security, data-ai"
+                               list="agents-categories">
+                        <datalist id="agents-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="agents-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agents-name">Agent Name *</label>
+                        <input type="text" id="agents-name" name="name" required 
+                               placeholder="e.g., frontend-developer, security-auditor">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agents-description">Description *</label>
+                        <textarea id="agents-description" name="description" required 
+                                  placeholder="Brief description of what this agent does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agents-content">Content (Optional)</label>
+                        <textarea id="agents-content" name="content" class="code-editor"
+                                  placeholder="Full agent content. Leave empty to use template."></textarea>
+                        <small>If provided, this will override the template. Otherwise, a template will be generated.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Agent</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Commands Tab -->
+        <div id="tab-commands" class="tab-content">
+            <div class="component-form">
+                <h2>Add New Command</h2>
+                <form id="form-commands">
+                    <div class="form-group">
+                        <label for="commands-category">Category/Tag *</label>
+                        <input type="text" id="commands-category" name="category" required 
+                               placeholder="e.g., testing, performance, setup"
+                               list="commands-categories">
+                        <datalist id="commands-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="commands-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commands-name">Command Name *</label>
+                        <input type="text" id="commands-name" name="name" required 
+                               placeholder="e.g., generate-tests, optimize-bundle">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commands-description">Description *</label>
+                        <textarea id="commands-description" name="description" required 
+                                  placeholder="Brief description of what this command does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commands-content">Content (Optional)</label>
+                        <textarea id="commands-content" name="content" class="code-editor"
+                                  placeholder="Full command content. Leave empty to use template."></textarea>
+                        <small>If provided, this will override the template. Otherwise, a template will be generated.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Command</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- MCPs Tab -->
+        <div id="tab-mcps" class="tab-content">
+            <div class="component-form">
+                <h2>Add New MCP</h2>
+                <form id="form-mcps">
+                    <div class="form-group">
+                        <label for="mcps-category">Category/Tag *</label>
+                        <input type="text" id="mcps-category" name="category" required 
+                               placeholder="e.g., database, browser_automation, devtools"
+                               list="mcps-categories">
+                        <datalist id="mcps-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="mcps-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mcps-name">MCP Name *</label>
+                        <input type="text" id="mcps-name" name="name" required 
+                               placeholder="e.g., postgresql-integration, github-mcp">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mcps-description">Description *</label>
+                        <textarea id="mcps-description" name="description" required 
+                                  placeholder="Brief description of what this MCP does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mcps-content">JSON Configuration (Optional)</label>
+                        <textarea id="mcps-content" name="content" class="code-editor"
+                                  placeholder='{"mcpServers": {...}}'></textarea>
+                        <small>Valid JSON. If provided, this will override the template.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create MCP</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="tab-content">
+            <div class="component-form">
+                <h2>Add New Setting</h2>
+                <form id="form-settings">
+                    <div class="form-group">
+                        <label for="settings-category">Category/Tag *</label>
+                        <input type="text" id="settings-category" name="category" required 
+                               placeholder="e.g., performance, security, mcp"
+                               list="settings-categories">
+                        <datalist id="settings-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="settings-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-name">Setting Name *</label>
+                        <input type="text" id="settings-name" name="name" required 
+                               placeholder="e.g., mcp-timeouts, read-only-mode">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-description">Description *</label>
+                        <textarea id="settings-description" name="description" required 
+                                  placeholder="Brief description of what this setting does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-content">JSON Configuration (Optional)</label>
+                        <textarea id="settings-content" name="content" class="code-editor"
+                                  placeholder='{"description": "...", "env": {...}}'></textarea>
+                        <small>Valid JSON. If provided, this will override the template.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Setting</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Hooks Tab -->
+        <div id="tab-hooks" class="tab-content">
+            <div class="component-form">
+                <h2>Add New Hook</h2>
+                <form id="form-hooks">
+                    <div class="form-group">
+                        <label for="hooks-category">Category/Tag *</label>
+                        <input type="text" id="hooks-category" name="category" required 
+                               placeholder="e.g., git, automation, performance"
+                               list="hooks-categories">
+                        <datalist id="hooks-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="hooks-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hooks-name">Hook Name *</label>
+                        <input type="text" id="hooks-name" name="name" required 
+                               placeholder="e.g., auto-git-add, format-on-save">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hooks-description">Description *</label>
+                        <textarea id="hooks-description" name="description" required 
+                                  placeholder="Brief description of what this hook does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hooks-content">JSON Configuration (Optional)</label>
+                        <textarea id="hooks-content" name="content" class="code-editor"
+                                  placeholder='{"description": "...", "hooks": {...}}'></textarea>
+                        <small>Valid JSON. If provided, this will override the template.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Hook</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Skills Tab -->
+        <div id="tab-skills" class="tab-content">
+            <div class="component-form">
+                <h2>Add New Skill</h2>
+                <form id="form-skills">
+                    <div class="form-group">
+                        <label for="skills-category">Category/Tag *</label>
+                        <input type="text" id="skills-category" name="category" required 
+                               placeholder="e.g., development, document-processing, creative-design"
+                               list="skills-categories">
+                        <datalist id="skills-categories"></datalist>
+                        <small>Select from existing categories or create a new one</small>
+                        <div id="skills-category-suggestions" class="category-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skills-name">Skill Name *</label>
+                        <input type="text" id="skills-name" name="name" required 
+                               placeholder="e.g., pdf-processor, api-builder">
+                        <small>Use kebab-case (lowercase with hyphens). Creates a directory with SKILL.md inside.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skills-description">Description *</label>
+                        <textarea id="skills-description" name="description" required 
+                                  placeholder="Brief description of what this skill does"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skills-content">SKILL.md Content (Optional)</label>
+                        <textarea id="skills-content" name="content" class="code-editor"
+                                  placeholder="Full SKILL.md content. Leave empty to use template."></textarea>
+                        <small>If provided, this will override the template. Otherwise, a template will be generated.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Skill</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Plugins Tab -->
+        <div id="tab-plugins" class="tab-content">
+            <div class="component-form">
+                <h2>Plugin Information</h2>
+                <div class="alert alert-info">
+                    <strong>Note:</strong> Plugins are collections of other components (agents, commands, MCPs, hooks) defined in <code>.claude-plugin/marketplace.json</code>.
+                    <br><br>
+                    To create a plugin, you need to manually edit the marketplace.json file. Plugins bundle multiple components together.
+                </div>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">
+                    See <code>.claude-plugin/marketplace.json</code> for examples of plugin definitions.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Catalog Regeneration -->
+        <div class="component-form">
+            <h2>Catalog Management</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                After adding components, regenerate the catalog to update the website.
+            </p>
+            <button id="regenerate-catalog" class="btn btn-success">🔄 Regenerate Catalog</button>
+        </div>
+    </div>
+    
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+            });
+        });
+        
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertsDiv = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertsDiv.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        // Load existing categories
+        let allCategories = {};
+        
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/admin/get-categories');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allCategories = result.categories;
+                    
+                    // Update all category inputs with datalist and suggestions
+                    Object.keys(allCategories).forEach(type => {
+                        const input = document.getElementById(`${type}-category`);
+                        const datalist = document.getElementById(`${type}-categories`);
+                        const suggestionsDiv = document.getElementById(`${type}-category-suggestions`);
+                        
+                        if (input && datalist && suggestionsDiv) {
+                            const categories = allCategories[type] || [];
+                            
+                            // Update datalist
+                            datalist.innerHTML = '';
+                            categories.forEach(cat => {
+                                const option = document.createElement('option');
+                                option.value = cat;
+                                datalist.appendChild(option);
+                            });
+                            
+                            // Update suggestions chips
+                            suggestionsDiv.innerHTML = '';
+                            if (categories.length > 0) {
+                                categories.forEach(cat => {
+                                    const chip = document.createElement('span');
+                                    chip.className = 'category-chip';
+                                    chip.textContent = cat;
+                                    chip.addEventListener('click', () => {
+                                        input.value = cat;
+                                    });
+                                    suggestionsDiv.appendChild(chip);
+                                });
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+        
+        // Load categories on page load
+        loadCategories();
+        
+        // Handle form submissions
+        ['agents', 'commands', 'mcps', 'settings', 'hooks', 'skills'].forEach(type => {
+            const form = document.getElementById(`form-${type}`);
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const data = {
+                    type: type,
+                    category: formData.get('category'),
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    content: formData.get('content') || undefined
+                };
+                
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading"></span> Creating...';
+                
+                try {
+                    const response = await fetch('/api/admin/create-component', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showAlert(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} "${data.name}" created successfully!`, 'success');
+                        form.reset();
+                        // Reload categories to include the new one
+                        loadCategories();
+                    } else {
+                        showAlert(`❌ Error: ${result.error || result.message}`, 'error');
+                    }
+                } catch (error) {
+                    showAlert(`❌ Network error: ${error.message}`, 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        });
+        
+        // Handle catalog regeneration
+        document.getElementById('regenerate-catalog').addEventListener('click', async () => {
+            const btn = document.getElementById('regenerate-catalog');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Regenerating...';
+            
+            try {
+                const response = await fetch('/api/admin/regenerate-catalog', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('✅ Catalog regenerated successfully!', 'success');
+                } else {
+                    showAlert(`❌ Error: ${result.error || result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
+

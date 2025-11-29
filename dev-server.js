@@ -29,6 +29,11 @@ app.get('/blog/*', (req, res) => {
     });
 });
 
+// Handle admin panel
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'docs', 'admin.html'));
+});
+
 // Default route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'docs', 'index.html'));

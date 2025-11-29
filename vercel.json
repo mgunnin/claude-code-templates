@@ -47,6 +47,14 @@
     {
       "source": "/component/:type/:name*",
       "destination": "/component.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/api/admin/:path*",
+      "destination": "/api/admin/:path*"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-templates",
+  "name": "vibeforge",
   "version": "1.28.3",
-  "description": "CLI tool to setup Claude Code configurations with framework-specific commands, automation hooks and MCP Servers for your projects",
+  "description": "VibeForge - CLI tool to setup Claude Code configurations with framework-specific commands, automation hooks and MCP Servers for your projects",
   "main": "src/index.js",
   "bin": {
     "create-claude-config": "bin/create-claude-config.js",
@@ -61,7 +61,7 @@
     "rust",
     "go"
   ],
-  "author": "Claude Code Templates",
+  "author": "VibeForge",
   "license": "MIT",
   "dependencies": {
     "boxen": "^5.1.2",
