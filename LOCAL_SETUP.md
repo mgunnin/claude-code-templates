@@ -140,8 +140,8 @@ npm run analytics:start
 
 ```bash
 cd ..
-npm run dev
-# Opens at http://localhost:3000
+npm run dev:vercel
+# Opens at http://localhost:3002 (or use --listen to specify a different port)
 ```
 
 ### 4. API Development

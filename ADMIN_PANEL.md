@@ -6,7 +6,9 @@ The admin panel provides a web-based interface for easily adding and managing Cl
 
 ## Access
 
-- **Local Development**: `http://localhost:3001/admin` (when running `npm run dev`)
+- **Local Development**: 
+  - `http://localhost:3002/admin` (when running `npm run dev:vercel` - full API support)
+  - `http://localhost:3001/admin` (when running `npm run dev` - frontend only)
 - **Production**: `https://aitmpl.com/admin` (after deployment)
 
 ## Features
@@ -142,11 +144,15 @@ ADMIN_API_KEY=your-secret-key-here
 ### Running Locally
 
 ```bash
-# Start the dev server
-npm run dev
+# Start the dev server with full API support (recommended)
+npm run dev:vercel
 
 # Access admin panel
-open http://localhost:3001/admin
+open http://localhost:3002/admin
+
+# Or use simple Express server (frontend only, no API)
+npm run dev
+# Access at http://localhost:3001/admin
 ```
 
 ### Testing
