@@ -239,6 +239,7 @@
             <button class="tab" data-tab="hooks">🪝 Hooks</button>
             <button class="tab" data-tab="skills">🎨 Skills</button>
             <button class="tab" data-tab="plugins">🧩 Plugins</button>
+            <button class="tab" data-tab="scrape">🔍 Scrape & Generate</button>
         </div>
         
         <!-- Agents Tab -->
@@ -514,6 +515,95 @@
             </div>
         </div>
         
+        <!-- Scrape & Generate Tab -->
+        <div id="tab-scrape" class="tab-content">
+            <div class="component-form">
+                <h2>🔍 Scrape URL & Generate Component</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Enter a URL to scrape content, then use AI to generate a component from the scraped content.
+                </p>
+                
+                <form id="form-scrape">
+                    <div class="form-group">
+                        <label for="scrape-url">URL to Scrape *</label>
+                        <input type="url" id="scrape-url" name="url" required 
+                               placeholder="https://example.com/docs or https://github.com/user/repo/blob/main/file.md">
+                        <small>Enter any URL with documentation or code content</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="scrape-use-ai" name="useAI" checked>
+                            <span>🤖 Enable AI Analysis</span>
+                        </label>
+                        <small>Use AI to automatically categorize, extract metadata, and suggest component details</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scrape-component-type">Component Type *</label>
+                        <select id="scrape-component-type" name="componentType" required>
+                            <option value="">Select a type...</option>
+                            <option value="agents">🤖 Agents</option>
+                            <option value="commands">⚡ Commands</option>
+                            <option value="mcps">🔌 MCPs</option>
+                            <option value="settings">⚙️ Settings</option>
+                            <option value="hooks">🪝 Hooks</option>
+                            <option value="skills">🎨 Skills</option>
+                        </select>
+                        <small>What type of component should be generated?</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scrape-category">Category *</label>
+                        <input type="text" id="scrape-category" name="category" required 
+                               placeholder="e.g., development-team, testing, security">
+                        <small>Category/tag for the component</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scrape-name">Component Name *</label>
+                        <input type="text" id="scrape-name" name="name" required 
+                               placeholder="e.g., my-component">
+                        <small>Use kebab-case (lowercase with hyphens)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scrape-description">Description *</label>
+                        <textarea id="scrape-description" name="description" required 
+                                  placeholder="Brief description of what this component does"></textarea>
+                        <small>This helps the AI understand what to generate</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="btn-scrape" class="btn btn-primary">🔍 Scrape URL</button>
+                        <button type="button" id="btn-generate" class="btn btn-success" disabled>🤖 Generate Component</button>
+                        <button type="button" id="btn-create" class="btn btn-success" disabled>✅ Create Component</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+                
+                <!-- Scraped Content Preview -->
+                <div id="scrape-preview" class="hidden" style="margin-top: 2rem;">
+                    <h3>Scraped Content Preview</h3>
+                    <div id="scrape-preview-content" style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 4px; padding: 1rem; max-height: 400px; overflow-y: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;"></div>
+                </div>
+                
+                <!-- AI Analysis Suggestions -->
+                <div id="ai-suggestions" class="hidden" style="margin-top: 2rem;">
+                    <h3>🤖 AI Suggestions</h3>
+                    <div id="ai-suggestions-content" style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 4px; padding: 1rem;">
+                        <!-- AI suggestions will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Generated Component Preview -->
+                <div id="generate-preview" class="hidden" style="margin-top: 2rem;">
+                    <h3>Generated Component Preview</h3>
+                    <div id="generate-preview-content" style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 4px; padding: 1rem; max-height: 500px; overflow-y: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;"></div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Catalog Regeneration -->
         <div class="component-form">
             <h2>Catalog Management</h2>
@@ -553,6 +643,79 @@
             setTimeout(() => {
                 alert.remove();
             }, 5000);
+        }
+        
+        // Show AI suggestions
+        function showAISuggestions(analysis) {
+            const suggestionsDiv = document.getElementById('ai-suggestions');
+            const contentDiv = document.getElementById('ai-suggestions-content');
+            
+            if (!analysis || analysis.error) {
+                return;
+            }
+            
+            suggestionsDiv.classList.remove('hidden');
+            
+            let html = '';
+            
+            // Validation results
+            if (analysis.validation) {
+                const quality = analysis.validation.dataQuality || 'unknown';
+                const qualityColor = quality === 'high' ? 'var(--text-success)' : quality === 'medium' ? 'var(--text-warning)' : 'var(--text-error)';
+                html += `<div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(165, 214, 255, 0.1); border-left: 3px solid ${qualityColor}; border-radius: 4px;">`;
+                html += `<strong>Data Quality:</strong> <span style="color: ${qualityColor}">${quality.toUpperCase()}</span><br>`;
+                if (analysis.validation.recommendations && analysis.validation.recommendations.length > 0) {
+                    html += `<strong>Recommendations:</strong><ul style="margin: 0.5rem 0 0 1.5rem;">`;
+                    analysis.validation.recommendations.forEach(rec => {
+                        html += `<li>${rec}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+                if (analysis.validation.warnings && analysis.validation.warnings.length > 0) {
+                    html += `<strong style="color: var(--text-error);">Warnings:</strong><ul style="margin: 0.5rem 0 0 1.5rem; color: var(--text-error);">`;
+                    analysis.validation.warnings.forEach(warn => {
+                        html += `<li>${warn}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+                html += `</div>`;
+            }
+            
+            // Extracted metadata
+            if (analysis.extractedMetadata) {
+                html += `<div style="margin-bottom: 1rem;">`;
+                html += `<strong>Extracted Metadata:</strong><br>`;
+                if (analysis.extractedMetadata.purpose) {
+                    html += `<strong>Purpose:</strong> ${analysis.extractedMetadata.purpose}<br>`;
+                }
+                if (analysis.extractedMetadata.features && analysis.extractedMetadata.features.length > 0) {
+                    html += `<strong>Features:</strong> ${analysis.extractedMetadata.features.join(', ')}<br>`;
+                }
+                if (analysis.extractedMetadata.tools && analysis.extractedMetadata.tools.length > 0) {
+                    html += `<strong>Suggested Tools:</strong> ${analysis.extractedMetadata.tools.join(', ')}<br>`;
+                }
+                html += `</div>`;
+            }
+            
+            // Repository insights
+            if (analysis.repositoryInsights && analysis.repositoryInsights.relevantFiles && analysis.repositoryInsights.relevantFiles.length > 0) {
+                html += `<div style="margin-bottom: 1rem;">`;
+                html += `<strong>Repository Insights:</strong><br>`;
+                html += `<strong>Relevant Files:</strong> ${analysis.repositoryInsights.relevantFiles.slice(0, 5).join(', ')}<br>`;
+                if (analysis.repositoryInsights.componentStructure) {
+                    html += `<strong>Structure:</strong> ${analysis.repositoryInsights.componentStructure}<br>`;
+                }
+                html += `</div>`;
+            }
+            
+            // Reasoning
+            if (analysis.reasoning) {
+                html += `<div style="margin-top: 1rem; padding: 0.75rem; background: rgba(165, 214, 255, 0.05); border-radius: 4px; font-style: italic; color: var(--text-secondary);">`;
+                html += `<strong>AI Reasoning:</strong> ${analysis.reasoning}`;
+                html += `</div>`;
+            }
+            
+            contentDiv.innerHTML = html;
         }
         
         // Load existing categories
@@ -674,6 +837,242 @@
                 
                 if (response.ok) {
                     showAlert('✅ Catalog regenerated successfully!', 'success');
+                } else {
+                    showAlert(`❌ Error: ${result.error || result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+        // Scrape & Generate workflow
+        let scrapedData = null;
+        let generatedComponent = null;
+        let aiAnalysis = null;
+        
+        // Scrape URL
+        document.getElementById('btn-scrape').addEventListener('click', async () => {
+            const url = document.getElementById('scrape-url').value;
+            if (!url) {
+                showAlert('❌ Please enter a URL', 'error');
+                return;
+            }
+            
+            const useAI = document.getElementById('scrape-use-ai').checked;
+            
+            const btn = document.getElementById('btn-scrape');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loading"></span> Scraping${useAI ? ' with AI...' : '...'}`;
+            
+            try {
+                const response = await fetch('/api/admin/scrape-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url, useAI })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    scrapedData = result.data;
+                    aiAnalysis = result.data.aiAnalysis || null;
+                    
+                    // Show preview
+                    const previewDiv = document.getElementById('scrape-preview');
+                    const previewContent = document.getElementById('scrape-preview-content');
+                    previewDiv.classList.remove('hidden');
+                    
+                    let previewText = `Title: ${scrapedData.title || 'N/A'}\n\n`;
+                    previewText += `Description: ${scrapedData.description || 'N/A'}\n\n`;
+                    previewText += `Content (first 2000 chars):\n${scrapedData.content?.substring(0, 2000) || 'N/A'}`;
+                    if (scrapedData.codeBlocks && scrapedData.codeBlocks.length > 0) {
+                        previewText += `\n\nCode Blocks Found: ${scrapedData.codeBlocks.length}`;
+                    }
+                    
+                    // Add AI analysis info if available
+                    if (aiAnalysis && !aiAnalysis.error) {
+                        previewText += `\n\n🤖 AI Analysis:\n`;
+                        previewText += `Suggested Type: ${aiAnalysis.suggestedComponentType || 'N/A'}\n`;
+                        previewText += `Suggested Category: ${aiAnalysis.suggestedCategory || 'N/A'}\n`;
+                        previewText += `Suggested Name: ${aiAnalysis.suggestedName || 'N/A'}\n`;
+                        previewText += `Confidence: ${((aiAnalysis.confidence || 0) * 100).toFixed(0)}%\n`;
+                        if (aiAnalysis.validation) {
+                            previewText += `Data Quality: ${aiAnalysis.validation.dataQuality || 'N/A'}\n`;
+                        }
+                    }
+                    
+                    previewContent.textContent = previewText;
+                    
+                    // Auto-populate form fields from AI analysis
+                    if (aiAnalysis && !aiAnalysis.error) {
+                        // Auto-select component type
+                        if (aiAnalysis.suggestedComponentType) {
+                            const typeSelect = document.getElementById('scrape-component-type');
+                            typeSelect.value = aiAnalysis.suggestedComponentType;
+                        }
+                        
+                        // Auto-fill category
+                        if (aiAnalysis.suggestedCategory) {
+                            document.getElementById('scrape-category').value = aiAnalysis.suggestedCategory;
+                        }
+                        
+                        // Auto-fill name
+                        if (aiAnalysis.suggestedName) {
+                            document.getElementById('scrape-name').value = aiAnalysis.suggestedName;
+                        }
+                        
+                        // Auto-fill description
+                        if (aiAnalysis.extractedMetadata && aiAnalysis.extractedMetadata.description) {
+                            document.getElementById('scrape-description').value = aiAnalysis.extractedMetadata.description;
+                        }
+                        
+                        // Show AI suggestions panel
+                        showAISuggestions(aiAnalysis);
+                    }
+                    
+                    // Enable generate button
+                    document.getElementById('btn-generate').disabled = false;
+                    
+                    const aiMsg = aiAnalysis && !aiAnalysis.error ? ' with AI analysis!' : '!';
+                    showAlert(`✅ URL scraped successfully${aiMsg}`, 'success');
+                } else {
+                    showAlert(`❌ Error: ${result.error || result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+        // Generate component from scraped content
+        document.getElementById('btn-generate').addEventListener('click', async () => {
+            if (!scrapedData) {
+                showAlert('❌ Please scrape a URL first', 'error');
+                return;
+            }
+            
+            const form = document.getElementById('form-scrape');
+            const formData = new FormData(form);
+            
+            const componentType = formData.get('componentType');
+            const category = formData.get('category');
+            const name = formData.get('name');
+            const description = formData.get('description');
+            
+            if (!componentType || !category || !name || !description) {
+                showAlert('❌ Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-generate');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Generating...';
+            
+            try {
+                // Combine scraped content into a single string
+                let scrapedContent = '';
+                if (scrapedData.title) scrapedContent += `Title: ${scrapedData.title}\n\n`;
+                if (scrapedData.description) scrapedContent += `Description: ${scrapedData.description}\n\n`;
+                if (scrapedData.content) scrapedContent += `Content:\n${scrapedData.content}\n\n`;
+                if (scrapedData.codeBlocks && scrapedData.codeBlocks.length > 0) {
+                    scrapedContent += `Code Blocks:\n${scrapedData.codeBlocks.map((cb, i) => `\n--- Code Block ${i + 1} (${cb.language}) ---\n${cb.content}`).join('\n')}`;
+                }
+                
+                const response = await fetch('/api/admin/generate-component', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        componentType,
+                        category,
+                        name,
+                        description,
+                        scrapedContent,
+                        documentationUrl: document.getElementById('scrape-url').value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    generatedComponent = result.data;
+                    
+                    // Show preview
+                    const previewDiv = document.getElementById('generate-preview');
+                    const previewContent = document.getElementById('generate-preview-content');
+                    previewDiv.classList.remove('hidden');
+                    previewContent.textContent = generatedComponent.content;
+                    
+                    // Enable create button
+                    document.getElementById('btn-create').disabled = false;
+                    
+                    showAlert('✅ Component generated successfully! Review and click "Create Component" to save.', 'success');
+                } else {
+                    showAlert(`❌ Error: ${result.error || result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+        // Create component
+        document.getElementById('btn-create').addEventListener('click', async () => {
+            if (!generatedComponent) {
+                showAlert('❌ Please generate a component first', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-create');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Creating...';
+            
+            try {
+                const response = await fetch('/api/admin/create-component', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: generatedComponent.componentType,
+                        category: generatedComponent.category,
+                        name: generatedComponent.name,
+                        description: document.getElementById('scrape-description').value,
+                        content: generatedComponent.content
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`✅ ${generatedComponent.componentType.charAt(0).toUpperCase() + generatedComponent.componentType.slice(1)} "${generatedComponent.name}" created successfully!`, 'success');
+                    
+                    // Reset form
+                    document.getElementById('form-scrape').reset();
+                    document.getElementById('scrape-preview').classList.add('hidden');
+                    document.getElementById('ai-suggestions').classList.add('hidden');
+                    document.getElementById('generate-preview').classList.add('hidden');
+                    document.getElementById('btn-generate').disabled = true;
+                    document.getElementById('btn-create').disabled = true;
+                    scrapedData = null;
+                    generatedComponent = null;
+                    aiAnalysis = null;
+                    
+                    // Reload categories
+                    loadCategories();
                 } else {
                     showAlert(`❌ Error: ${result.error || result.message}`, 'error');
                 }
